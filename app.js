@@ -46,6 +46,9 @@ const upload = multer({
 });
 app.post("/api/v1/upload", upload.single("file"), (req, res, next) => {
   console.log(req.file.originalname);
+
+  console.log(req.body.name);
+
   res.json({
     status: "Succes",
     message: "Uploaded",
@@ -60,12 +63,24 @@ app.post("/api/v1/multi/upload", upload.array("file", 2), (req, res, next) => {
 });
 
 app.get("/", async (req, res, next) => {
-  let students = await studentModel.find();
-  res.render("index", {
-    islogo: false,
-    logo: "N7 Practicum guruh",
-    students: students,
-  });
+  res.render("index");
 });
+app.get("/:page", async (req, res, next) => {
+  console.log(req.params.page);
+
+  res.render(`${req.params.page}`);
+});
+// app.get("/contact", async (req, res, next) => {
+//   res.render("contact");
+// });
+// app.get("/feature", async (req, res, next) => {
+//   res.render("feature");
+// });
+// app.get("/blog", async (req, res, next) => {
+//   res.render("blog");
+// });
+// app.get("/service", async (req, res, next) => {
+//   res.render("service");
+// });
 app.use(ErrorHandler);
 export default app;
