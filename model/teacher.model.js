@@ -8,5 +8,8 @@ let teacherSchema = new mongoose.Schema({
     type: String,
     unique: ["Yagona bolishi shart", true],
   },
+  image: {
+    type: String,
+  },
 });
 export default mongoose.model("teacher", teacherSchema);

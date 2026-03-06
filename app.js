@@ -1,16 +1,17 @@
 import express from "express";
+import cookieParser from "cookie-parser";
+
 import studentRouter from "./routes/student.route.js";
 import teacherRoute from "./routes/teacher.route.js";
+import authRouter from "./routes/auth.route.js";
 import ErrorHandler from "./middlewares/errorHandler.middleware.js";
 import studentModel from "./model/student.model.js";
-import multer from "multer";
 
-import { v4 as uuidv4 } from "uuid";
-import path from "path";
-import MyError from "./utils/customError.js";
+import { upload } from "./middlewares/upload.middleware.js";
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 // app.use(upload());
 app.use("/static", express.static("./public"));
 app.use(express.static("./views/css"));
@@ -21,29 +22,8 @@ app.set("view engine", "ejs");
 
 app.use("/api/v1/student", studentRouter);
 app.use("/api/v1/teacher", teacherRoute);
+app.use("/api/v1/auth", authRouter);
 
-let storage = multer.diskStorage({
-  destination: "./uploads",
-  filename: function (req, file, cb) {
-    console.log(file.size);
-    if (file.mimetype.startsWith("image/")) {
-      cb(
-        null,
-        String(uuidv4()) +
-          "_" +
-          String(Date.now()) +
-          path.extname(file.originalname),
-      );
-    } else {
-      cb(new MyError(400, "File rams bo'lishi shart"));
-    }
-  },
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-});
 app.post("/api/v1/upload", upload.single("file"), (req, res, next) => {
   console.log(req.file.originalname);
 
@@ -66,7 +46,7 @@ app.get("/", async (req, res, next) => {
   res.render("index");
 });
 app.get("/:page", async (req, res, next) => {
-  console.log(req.params.page);
+  //   console.log(req.params.page);
 
   res.render(`${req.params.page}`);
 });

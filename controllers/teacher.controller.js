@@ -23,4 +23,18 @@ let createTeacher = async (req, res, next) => {
   }
 };
 
-export { getAllTeacher, createTeacher };
+let createTeacherWithPhoto = async (req, res, next) => {
+  try {
+    let { name, phone } = req.body;
+    let photo;
+    if (req.file) photo = req.file.filename;
+    if (!name || !phone) throw new MyError(400, "Malumotlar kiritish shart");
+    let data = new teacherModel({ name, phone, image: photo });
+    await data.save();
+    response(res, 201, data, "Malumotlar muvaffaqiyatli qo'shioldi");
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { getAllTeacher, createTeacher, createTeacherWithPhoto };

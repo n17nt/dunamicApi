@@ -5,11 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
   </head>
-  <body>
-    <form action="">
-      <input type="file" />
-      <input type="text" />
+  <body style="">
+    <form
+      style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 90vh;
+      "
+      action=""
+    >
+      <input type="file" id="file" />
+      <label for="">File</label>
+      <input type="text" id="text" />
+      <label for="">Name</label>
       <button type="submit">Submir</button>
     </form>
+    <script>
+      document
+        .querySelector("form")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+          let file = document.querySelector("#file").files[0];
+          //   console.log(file);
+
+          let name = document.querySelector("#text").value;
+          const formdata = new FormData();
+          formdata.append("file", file);
+          formdata.append("name", name);
+
+          const requestOptions = {
+            method: "POST",
+            body: formdata,
+            redirect: "follow",
+          };
+
+          await fetch("http://localhost:3000/api/v1/upload", requestOptions)
+            .then((response) => response.json())
+            .then((result) => console.log(result))
+            .catch((error) => console.error(error));
+        });
+    </script>
   </body>
 </html>
