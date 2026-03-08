@@ -1,4 +1,5 @@
 import userModel from "../model/user.model.js";
+import { loginAuthSchema, registerAuthSchema } from "../schemas/auth.schema.js";
 import MyError from "../utils/customError.js";
 import response from "../utils/response.function.js";
 import { generatorAccesToken, generatorRefreshToken } from "../utils/token.js";
@@ -8,9 +9,7 @@ import jwt from "jsonwebtoken";
 let register = async (req, res, next) => {
   try {
     let { username, password, email } = req.body;
-    if (!username || !password || !email)
-      throw new MyError(400, "Ma'lumotlar to'liq emas");
-    let user = await userModel.create({ username, password, email }).lean();
+    let user = await userModel.create({ username, password, email });
 
     // delete user.password;
     user.password = undefined;
@@ -22,8 +21,6 @@ let register = async (req, res, next) => {
 let login = async (req, res, next) => {
   try {
     let { login, password } = req.body;
-    if (!login || !password) throw new MyError(400, "Ma'lumotlar to'liq emas");
-
     let user = await userModel.findOne({ username: login }).select("+password");
     if (!user) throw new MyError(404, "Bunaqa foydalanuvch mavjud emas");
 

@@ -6,7 +6,11 @@ let jwtMiddleware = (req, res, next) => {
     let token = tokenData.split(" ")[1];
     // console.log(token);
     let userdata = jwt.verify(token, process.env.ACCESS_SECRET_KEY);
-    console.log(userdata);
+    let nowtime = Date.now();
+    let exprTime = new Date(userdata.iat * 1000 + userdata.expiresIn);
+    if (exprTime < nowtime) {
+      throw new MyError(401, "JWT token expired!!");
+    }
     req.user = userdata;
     next();
   } catch (error) {

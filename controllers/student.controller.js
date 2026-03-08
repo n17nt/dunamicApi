@@ -1,5 +1,6 @@
 import studentModel from "../model/student.model.js";
 import teacherModel from "../model/teacher.model.js";
+import { studentQuerySchema } from "../schemas/student.schema.js";
 import MyError from "../utils/customError.js";
 
 let getAllStudents = async (req, res, next) => {
@@ -16,34 +17,13 @@ let getAllStudents = async (req, res, next) => {
 };
 let getAllStudentsAggregate = async (req, res, next) => {
   try {
-    let data = await studentModel.aggregate([
-      { $match: { mark: { $gt: 40 } } },
-      //   { $group: { _id: "$subject", maksimalbaho: { $max: "$mark" } } },
-      {
-        $lookup: {
-          foreignField: "_id",
-          localField: "teacher_id",
-          from: "teachers",
-          as: "ustozlar",
-        },
-      },
-      {
-        $unwind: { path: "$ustozlar", preserveNullAndEmptyArrays: true },
-      },
-      {
-        $project: {
-          //   mark: 1,
-          //   name: 1,
-          //   ustozlar: 1,
-          subject: 0,
-        },
-      },
-      {
-        $addFields: {
-          teacherName: "$ustozlar.name",
-        },
-      },
-    ]);
+    let { dedmark, subject } = req.query;
+    console.log(dedmark, subject);
+    let filter = {};
+    if (dedmark) filter["mark"] = { $gte: +dedmark };
+    if (subject) filter["subject"] = subject;
+
+    let data = await studentModel.aggregate([{ $match: filter }]);
     res.json({
       message: "Malumotlar muvaffaqiyatli olindi",
       status: "succes",
