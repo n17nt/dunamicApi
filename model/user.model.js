@@ -26,6 +26,8 @@ const usersSchema = new mongoose.Schema(
       default: "user",
     },
     avatar: { type: String, default: "avatar.png" },
+    otp_code: { type: Number },
+    otp_date: { type: Date },
   },
   {
     timestamps: true,
@@ -35,8 +37,10 @@ const usersSchema = new mongoose.Schema(
 );
 
 usersSchema.pre("save", function () {
-  const salt = bcrypt.genSaltSync(10);
-  this.password = bcrypt.hashSync(this.password, salt);
+  if (this.password) {
+    const salt = bcrypt.genSaltSync(10);
+    this.password = bcrypt.hashSync(this.password, salt);
+  }
 });
 
 usersSchema.methods.hashCheck = function (password) {

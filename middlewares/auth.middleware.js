@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import MyError from "../utils/customError.js";
-let jwtMiddleware = (req, res, next) => {
+import userModel from "../model/user.model.js";
+let jwtMiddleware = async (req, res, next) => {
   try {
     let tokenData = req.headers.authorization;
     let token = tokenData.split(" ")[1];
@@ -10,6 +11,10 @@ let jwtMiddleware = (req, res, next) => {
     let exprTime = new Date(userdata.iat * 1000 + userdata.expiresIn);
     if (exprTime < nowtime) {
       throw new MyError(401, "JWT token expired!!");
+    }
+    let user = await userModel.findById(userdata.id);
+    if (!user) {
+      throw new MyError("Bunaqa user mavjud emas");
     }
     req.user = userdata;
     next();

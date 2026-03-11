@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 let generatorAccesToken = async (user) => {
   let token = jwt.sign(
-    { ...user, expiresIn: 30 * 1000 },
+    { ...user, expiresIn: 3 * 60 * 1000 },
     process.env.ACCESS_SECRET_KEY,
     {},
   );

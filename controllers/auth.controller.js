@@ -1,6 +1,7 @@
 import userModel from "../model/user.model.js";
 import { loginAuthSchema, registerAuthSchema } from "../schemas/auth.schema.js";
 import MyError from "../utils/customError.js";
+import senderMail from "../utils/mail.js";
 import response from "../utils/response.function.js";
 import { generatorAccesToken, generatorRefreshToken } from "../utils/token.js";
 
@@ -77,4 +78,83 @@ let refreshToken = async (req, res, next) => {
   }
 };
 
-export { register, login, getMe, refreshToken };
+let resetPassword = async (req, res, next) => {
+  try {
+    let { password, newPassword } = req.body;
+    let user_id = req.user.id;
+    if (password === newPassword)
+      throw new MyError(400, "Yangi passowrd eski bir xil berding");
+
+    let user = await userModel.findById(user_id).select("+password");
+    console.log(user);
+
+    let checkPass = user.hashCheck(password);
+    if (!checkPass) throw new MyError(401, "Eski passowrd kirildi");
+
+    user.password = newPassword;
+    await user.save();
+    user.password = undefined;
+    response(res, 200, { user: user }, "User paroli yangilandi");
+  } catch (error) {
+    next(error);
+  }
+};
+
+let forgetPassword = async (req, res, next) => {
+  try {
+    let { email } = req.body;
+
+    let user = await userModel.findOne({ email });
+    console.log(user);
+    if (!user) throw new MyError(404, "Bunaqa eail yo'q");
+    let otpCode = Math.floor(Math.random() * 900000 + 100000);
+    let otpTime = new Date(Date.now() + 5 * 60 * 1000);
+    user.otp_code = otpCode;
+    user.otp_date = otpTime;
+    await user.save();
+    console.log(otpCode, otpTime);
+    senderMail(
+      `
+        We heard that you lost your GitHub password. Sorry about that!
+
+        But don’t worry! You can use the following button to reset your password:`,
+      user.email,
+      otpCode,
+    );
+    response(res, 200, {}, "Sizni emailga xat jo'natildi");
+  } catch (error) {
+    next(error);
+  }
+};
+let updatePasswordwithOtp = async (req, res, next) => {
+  try {
+    let { otpCode, newPassword } = req.body;
+    let user = await userModel.findOne({
+      otp_code: otpCode,
+    });
+
+    if (!user) throw new MyError("User topilmadi");
+    let userOtpDate = user.otp_date;
+    user.otp_code = null;
+    user.otp_date = null;
+    await user.save();
+
+    if (!(userOtpDate >= new Date())) throw new MyError("vaqti o'tgan");
+    user.password = newPassword;
+    await user.save();
+    user.password = undefined;
+    response(res, 200, { user }, "Sizni parolingiz yangilandi");
+  } catch (error) {
+    next(error);
+  }
+};
+
+export {
+  register,
+  login,
+  getMe,
+  refreshToken,
+  resetPassword,
+  forgetPassword,
+  updatePasswordwithOtp,
+};
